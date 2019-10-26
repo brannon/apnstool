@@ -48,6 +48,10 @@ func NewSendRawCommand() *cobra.Command {
 	flags.StringVar(&cmd.Priority, PriorityFlag, PriorityDefault, PriorityDesc)
 	flags.StringVar(&cmd.PushType, PushTypeFlag, PushTypeDefault, PushTypeDesc)
 
+	_ = cobraCmd.MarkFlagRequired(AppIdFlag)
+	_ = cobraCmd.MarkFlagRequired(DeviceTokenFlag)
+	_ = cobraCmd.MarkFlagRequired(DataStringFlag)
+
 	return cobraCmd
 }
 

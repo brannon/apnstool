@@ -34,6 +34,9 @@ func NewSendBackgroundCommand() *cobra.Command {
 	BindSendCommonFlags(flags, &cmd.SendCmd)
 	flags.StringVarP(&cmd.DataString, DataStringFlag, DataStringShortFlag, DataStringDefault, DataStringDesc)
 
+	_ = cobraCmd.MarkFlagRequired(AppIdFlag)
+	_ = cobraCmd.MarkFlagRequired(DeviceTokenFlag)
+
 	return cobraCmd
 }
 

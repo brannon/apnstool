@@ -52,6 +52,9 @@ func NewSendAlertCommand() *cobra.Command {
 	flags.IntVar(&cmd.BadgeCount, BadgeCountFlag, BadgeCountDefault, BadgeCountDesc)
 	flags.StringVar(&cmd.SoundName, SoundNameFlag, SoundNameDefault, SoundNameDesc)
 
+	_ = cobraCmd.MarkFlagRequired(AppIdFlag)
+	_ = cobraCmd.MarkFlagRequired(DeviceTokenFlag)
+
 	return cobraCmd
 }
 
