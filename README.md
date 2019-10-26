@@ -1,3 +1,5 @@
+![](https://github.com/brannon/apnstool/workflows/ci-build/badge.svg)
+
 #  Command-line tool for interacting with APNs
 
 `apnstool` is a command-line tool for interacting with APNs (the Apple Push Notification service). It makes it simple to test your APNs credentials and different notification types.
