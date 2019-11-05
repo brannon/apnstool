@@ -6,6 +6,7 @@ package apns
 
 import (
 	"crypto/ecdsa"
+	"crypto/tls"
 	"crypto/x509"
 	"encoding/pem"
 	"errors"
@@ -14,7 +15,32 @@ import (
 	"time"
 
 	"github.com/pascaldekloe/jwt"
+	"golang.org/x/crypto/pkcs12"
 )
+
+func LoadCertificateFromFile(filePath string) (tls.Certificate, error) {
+	f, err := os.Open(filePath)
+	if err != nil {
+		return tls.Certificate{}, err
+	}
+
+	data, err := ioutil.ReadAll(f)
+	if err != nil {
+		return tls.Certificate{}, err
+	}
+
+	key, cert, err := pkcs12.Decode(data, "")
+	if err != nil {
+		return tls.Certificate{}, err
+	}
+
+	return tls.Certificate{
+		Certificate: [][]byte{
+			cert.Raw,
+		},
+		PrivateKey: key,
+	}, nil
+}
 
 func LoadKeyFromFile(filePath string) (*ecdsa.PrivateKey, error) {
 	f, err := os.Open(filePath)
