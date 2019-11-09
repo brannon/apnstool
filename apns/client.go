@@ -6,12 +6,15 @@ package apns
 
 import (
 	"bytes"
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"net/url"
+
+	"golang.org/x/net/http2"
 )
 
 const (
@@ -22,6 +25,7 @@ const (
 type Headers map[string]string
 
 type Client interface {
+	ConfigureCertificateAuth(cert tls.Certificate)
 	ConfigureTokenAuth(token string)
 	EnableLogging(writer io.Writer)
 	Send(deviceToken string, headers Headers, content []byte) (*SendResult, error)
@@ -29,11 +33,16 @@ type Client interface {
 
 type client struct {
 	bearerToken string
+	certificate tls.Certificate
 	logWriter   io.Writer
 }
 
 func NewClient() Client {
 	return &client{}
+}
+
+func (c *client) ConfigureCertificateAuth(cert tls.Certificate) {
+	c.certificate = cert
 }
 
 func (c *client) ConfigureTokenAuth(token string) {
@@ -50,7 +59,28 @@ func (c *client) Send(deviceToken string, headers Headers, content []byte) (*Sen
 		return nil, err
 	}
 
-	client := http.Client{}
+	var transport http.RoundTripper
+
+	if c.certificate.PrivateKey != nil {
+		c.log("* Using client certificate\n")
+		tlsConfig := &tls.Config{
+			Certificates: []tls.Certificate{
+				c.certificate,
+			},
+		}
+
+		tlsTransport := &http.Transport{
+			TLSClientConfig:   tlsConfig,
+			ForceAttemptHTTP2: true,
+		}
+
+		http2.ConfigureTransport(tlsTransport)
+		transport = tlsTransport
+	} else {
+		transport = http.DefaultTransport
+	}
+
+	client := http.Client{Transport: transport}
 
 	req := &http.Request{
 		Method:     "POST",

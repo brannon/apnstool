@@ -38,10 +38,11 @@ const (
 )
 
 type SendCmd struct {
-	AppId       string
-	DeviceToken string
-	TokenAuth   auth.TokenAuth
-	Verbose     bool
+	AppId           string
+	CertificateAuth auth.CertificateAuth
+	DeviceToken     string
+	TokenAuth       auth.TokenAuth
+	Verbose         bool
 
 	Client apns.Client
 	IO     cmdio.CmdIO
@@ -49,6 +50,7 @@ type SendCmd struct {
 
 func BindSendCommonFlags(flags *pflag.FlagSet, cmd *SendCmd) {
 	auth.BindTokenAuthFlags(flags, &cmd.TokenAuth)
+	auth.BindCertificateAuthFlags(flags, &cmd.CertificateAuth)
 	flags.StringVar(&cmd.AppId, AppIdFlag, AppIdDefault, AppIdDesc)
 	flags.StringVar(&cmd.DeviceToken, DeviceTokenFlag, DeviceTokenDefault, DeviceTokenDesc)
 	flags.BoolVarP(&cmd.Verbose, VerboseFlag, VerboseShortFlag, VerboseDefault, VerboseDesc)
@@ -75,6 +77,13 @@ func (cmd *SendCmd) sendNotification(
 		}
 
 		cmd.Client.ConfigureTokenAuth(token)
+	} else if cmd.useCertificateAuth() {
+		cert, err := apns.LoadCertificateFromFile(cmd.CertificateAuth.CertificateFile)
+		if err != nil {
+			return err
+		}
+
+		cmd.Client.ConfigureCertificateAuth(cert)
 	}
 
 	result, err := cmd.Client.Send(cmd.DeviceToken, headers, content)
@@ -88,6 +97,10 @@ func (cmd *SendCmd) sendNotification(
 	}
 
 	return nil
+}
+
+func (cmd *SendCmd) useCertificateAuth() bool {
+	return cmd.CertificateAuth.CertificateFile != ""
 }
 
 func (cmd *SendCmd) useTokenAuth() bool {
