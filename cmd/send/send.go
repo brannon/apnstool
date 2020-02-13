@@ -31,6 +31,10 @@ const (
 	DeviceTokenDefault = ""
 	DeviceTokenDesc    = "APNs device token"
 
+	SandboxFlag    = "sandbox"
+	SandboxDefault = false
+	SandboxDesc    = "use APNS sandbox endpoint"
+
 	VerboseFlag      = "verbose"
 	VerboseShortFlag = "v"
 	VerboseDefault   = false
@@ -41,6 +45,7 @@ type SendCmd struct {
 	AppId           string
 	CertificateAuth auth.CertificateAuth
 	DeviceToken     string
+	Sandbox         bool
 	TokenAuth       auth.TokenAuth
 	Verbose         bool
 
@@ -53,6 +58,7 @@ func BindSendCommonFlags(flags *pflag.FlagSet, cmd *SendCmd) {
 	auth.BindCertificateAuthFlags(flags, &cmd.CertificateAuth)
 	flags.StringVar(&cmd.AppId, AppIdFlag, AppIdDefault, AppIdDesc)
 	flags.StringVar(&cmd.DeviceToken, DeviceTokenFlag, DeviceTokenDefault, DeviceTokenDesc)
+	flags.BoolVar(&cmd.Sandbox, SandboxFlag, SandboxDefault, SandboxDesc)
 	flags.BoolVarP(&cmd.Verbose, VerboseFlag, VerboseShortFlag, VerboseDefault, VerboseDesc)
 }
 
@@ -62,6 +68,10 @@ func (cmd *SendCmd) sendNotification(
 ) error {
 	if cmd.Verbose {
 		cmd.Client.EnableLogging(cmd.IO.Stdout())
+	}
+
+	if cmd.Sandbox {
+		cmd.Client.ConfigureEndpoint(apns.SandboxEndpoint)
 	}
 
 	if cmd.useTokenAuth() {

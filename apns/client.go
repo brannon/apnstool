@@ -18,14 +18,17 @@ import (
 )
 
 const (
-	ProductionDeviceEndpoint = "https://api.push.apple.com/3/device/%s"
-	SandboxDeviceEndpoint    = "https://api.sandbox.push.apple.com/3/device/%s"
+	DeviceEndpointFormat = "https://%s/3/device/%s"
+
+	ProductionEndpoint = "api.push.apple.com"
+	SandboxEndpoint    = "api.sandbox.push.apple.com"
 )
 
 type Headers map[string]string
 
 type Client interface {
 	ConfigureCertificateAuth(cert tls.Certificate)
+	ConfigureEndpoint(endpoint string)
 	ConfigureTokenAuth(token string)
 	EnableLogging(writer io.Writer)
 	Send(deviceToken string, headers Headers, content []byte) (*SendResult, error)
@@ -34,15 +37,25 @@ type Client interface {
 type client struct {
 	bearerToken string
 	certificate tls.Certificate
+	endpoint    string
 	logWriter   io.Writer
 }
 
 func NewClient() Client {
-	return &client{}
+	return &client{
+		bearerToken: "",
+		certificate: tls.Certificate{},
+		endpoint:    ProductionEndpoint,
+		logWriter:   nil,
+	}
 }
 
 func (c *client) ConfigureCertificateAuth(cert tls.Certificate) {
 	c.certificate = cert
+}
+
+func (c *client) ConfigureEndpoint(endpoint string) {
+	c.endpoint = endpoint
 }
 
 func (c *client) ConfigureTokenAuth(token string) {
@@ -54,7 +67,7 @@ func (c *client) EnableLogging(writer io.Writer) {
 }
 
 func (c *client) Send(deviceToken string, headers Headers, content []byte) (*SendResult, error) {
-	deviceUrl, err := url.Parse(fmt.Sprintf(SandboxDeviceEndpoint, deviceToken))
+	deviceUrl, err := url.Parse(fmt.Sprintf(DeviceEndpointFormat, c.endpoint, deviceToken))
 	if err != nil {
 		return nil, err
 	}
