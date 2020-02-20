@@ -88,7 +88,7 @@ func (cmd *SendCmd) sendNotification(
 
 		cmd.Client.ConfigureTokenAuth(token)
 	} else if cmd.useCertificateAuth() {
-		cert, err := apns.LoadCertificateFromFile(cmd.CertificateAuth.CertificateFile)
+		cert, err := apns.LoadCertificateFromFile(cmd.CertificateAuth.CertificateFile, cmd.CertificateAuth.CertificatePassword)
 		if err != nil {
 			return err
 		}

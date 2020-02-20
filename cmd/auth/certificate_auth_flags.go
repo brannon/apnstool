@@ -11,12 +11,17 @@ import (
 const (
 	CertificateFileFlag = "cert-file"
 	CertificateFileDesc = "path to .p12 file containing APNs certificate"
+
+	CertificatePasswordFlag = "cert-password"
+	CertificatePasswordDesc = "password to decrypt the .p12 file (optional)"
 )
 
 type CertificateAuth struct {
-	CertificateFile string
+	CertificateFile     string
+	CertificatePassword string
 }
 
 func BindCertificateAuthFlags(flags *pflag.FlagSet, certificateAuth *CertificateAuth) {
 	flags.StringVar(&certificateAuth.CertificateFile, CertificateFileFlag, certificateAuth.CertificateFile, CertificateFileDesc)
+	flags.StringVar(&certificateAuth.CertificatePassword, CertificatePasswordFlag, certificateAuth.CertificatePassword, CertificatePasswordDesc)
 }

@@ -18,7 +18,7 @@ import (
 	"golang.org/x/crypto/pkcs12"
 )
 
-func LoadCertificateFromFile(filePath string) (tls.Certificate, error) {
+func LoadCertificateFromFile(filePath string, password string) (tls.Certificate, error) {
 	f, err := os.Open(filePath)
 	if err != nil {
 		return tls.Certificate{}, err
@@ -29,7 +29,7 @@ func LoadCertificateFromFile(filePath string) (tls.Certificate, error) {
 		return tls.Certificate{}, err
 	}
 
-	key, cert, err := pkcs12.Decode(data, "")
+	key, cert, err := pkcs12.Decode(data, password)
 	if err != nil {
 		return tls.Certificate{}, err
 	}
