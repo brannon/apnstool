@@ -26,3 +26,17 @@ jobs:
 
     - name: Build
       run: go build -v .
+
+    - name: Upload artifact
+      if: ${{ matrix.os != 'windows-latest' }}
+      uses: actions/upload-artifact@v1
+      with:
+        name: binary-${{ matrix.os }}
+        path: apnstool
+      
+    - name: Upload artifact
+      if: ${{ matrix.os == 'windows-latest' }}
+      uses: actions/upload-artifact@v1
+      with:
+        name: binary-${{ matrix.os }}
+        path: apnstool.exe
