@@ -5,6 +5,7 @@
 package auth
 
 import (
+	"io"
 	"time"
 
 	"github.com/spf13/pflag"
@@ -28,6 +29,7 @@ const (
 type TokenAuth struct {
 	KeyFile      string
 	KeyId        string
+	KeyReader    io.Reader
 	TeamId       string
 	ExpiresAfter time.Duration
 }

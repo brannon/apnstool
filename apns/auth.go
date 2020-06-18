@@ -10,6 +10,7 @@ import (
 	"crypto/x509"
 	"encoding/pem"
 	"errors"
+	"io"
 	"io/ioutil"
 	"os"
 	"time"
@@ -24,7 +25,11 @@ func LoadCertificateFromFile(filePath string, password string) (tls.Certificate,
 		return tls.Certificate{}, err
 	}
 
-	data, err := ioutil.ReadAll(f)
+	return LoadCertificateFromReader(f, password)
+}
+
+func LoadCertificateFromReader(reader io.Reader, password string) (tls.Certificate, error) {
+	data, err := ioutil.ReadAll(reader)
 	if err != nil {
 		return tls.Certificate{}, err
 	}
@@ -48,7 +53,11 @@ func LoadKeyFromFile(filePath string) (*ecdsa.PrivateKey, error) {
 		return nil, err
 	}
 
-	data, err := ioutil.ReadAll(f)
+	return LoadKeyFromReader(f)
+}
+
+func LoadKeyFromReader(reader io.Reader) (*ecdsa.PrivateKey, error) {
+	data, err := ioutil.ReadAll(reader)
 	if err != nil {
 		return nil, err
 	}
@@ -88,6 +97,15 @@ func GenerateJWTFromKey(key *ecdsa.PrivateKey, keyId string, teamId string, issu
 
 func GenerateJWTFromKeyFile(keyFile string, keyId string, teamId string, issuedAt time.Time, expiresAfter time.Duration) (string, error) {
 	key, err := LoadKeyFromFile(keyFile)
+	if err != nil {
+		return "", err
+	}
+
+	return GenerateJWTFromKey(key, keyId, teamId, issuedAt, expiresAfter)
+}
+
+func GenerateJWTFromKeyReader(keyReader io.Reader, keyId string, teamId string, issuedAt time.Time, expiresAfter time.Duration) (string, error) {
+	key, err := LoadKeyFromReader(keyReader)
 	if err != nil {
 		return "", err
 	}

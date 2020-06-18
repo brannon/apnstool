@@ -7,6 +7,7 @@ package send
 import (
 	"github.com/brannon/apnstool/apns"
 	"github.com/brannon/apnstool/cmdio"
+	"github.com/brannon/apnstool/operation"
 	"github.com/spf13/cobra"
 )
 
@@ -24,59 +25,36 @@ const (
 	SoundNameDesc    = "sound name"
 )
 
-type SendAlertCmd struct {
-	SendCmd
-
-	AlertText  string
-	BadgeCount int
-	SoundName  string
-}
-
 func NewSendAlertCommand() *cobra.Command {
-	cmd := &SendAlertCmd{}
+	client := apns.NewClient()
+	op := operation.NewSendAlert(client)
 
 	cobraCmd := &cobra.Command{
 		Use:   "alert",
 		Short: "Send simple alert notification through APNs",
 		RunE: func(c *cobra.Command, args []string) error {
-			cmd.Client = apns.NewClient()
-			cmd.IO = cmdio.NewCmdIO(c.OutOrStdout())
+			io := cmdio.NewCmdIO(c.OutOrStdout())
 
-			return cmd.Run()
+			result, err := op.Exec()
+			if err != nil {
+				return err
+			}
+
+			io.Out("Notification sent successfully\n")
+			io.Outf("APNS-ID: %s\n", result.ApnsId)
+
+			return nil
 		},
 	}
 
 	flags := cobraCmd.Flags()
-	BindSendCommonFlags(flags, &cmd.SendCmd)
-	flags.StringVar(&cmd.AlertText, AlertTextFlag, AlertTextDefault, AlertTextDesc)
-	flags.IntVar(&cmd.BadgeCount, BadgeCountFlag, BadgeCountDefault, BadgeCountDesc)
-	flags.StringVar(&cmd.SoundName, SoundNameFlag, SoundNameDefault, SoundNameDesc)
+	BindSendOperationCommonFlags(flags, &op.SendOperation)
+	flags.StringVar(&op.AlertText, AlertTextFlag, AlertTextDefault, AlertTextDesc)
+	flags.IntVar(&op.BadgeCount, BadgeCountFlag, BadgeCountDefault, BadgeCountDesc)
+	flags.StringVar(&op.SoundName, SoundNameFlag, SoundNameDefault, SoundNameDesc)
 
 	_ = cobraCmd.MarkFlagRequired(AppIdFlag)
 	_ = cobraCmd.MarkFlagRequired(DeviceTokenFlag)
 
 	return cobraCmd
-}
-
-func (cmd *SendAlertCmd) Run() error {
-	notificationBuilder := apns.NewNotificationBuilder(cmd.AppId)
-
-	if cmd.AlertText != "" {
-		notificationBuilder.SetAlertText(cmd.AlertText)
-	}
-
-	if cmd.BadgeCount != -1 {
-		notificationBuilder.SetBadgeCount(cmd.BadgeCount)
-	}
-
-	if cmd.SoundName != "" {
-		notificationBuilder.SetSoundName(cmd.SoundName)
-	}
-
-	headers, content, err := notificationBuilder.Build()
-	if err != nil {
-		return err
-	}
-
-	return cmd.sendNotification(headers, content)
 }

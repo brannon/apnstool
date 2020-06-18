@@ -10,6 +10,7 @@ import (
 
 	"github.com/brannon/apnstool/cmd/auth"
 	"github.com/brannon/apnstool/cmd/send"
+	"github.com/brannon/apnstool/cmd/serve"
 	"github.com/spf13/cobra"
 )
 
@@ -30,4 +31,5 @@ func Execute() {
 func init() {
 	rootCmd.AddCommand(auth.GetCommand())
 	rootCmd.AddCommand(send.GetCommand())
+	rootCmd.AddCommand(serve.GetCommand())
 }

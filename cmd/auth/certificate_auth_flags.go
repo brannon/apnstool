@@ -5,6 +5,8 @@
 package auth
 
 import (
+	"io"
+
 	"github.com/spf13/pflag"
 )
 
@@ -19,6 +21,7 @@ const (
 type CertificateAuth struct {
 	CertificateFile     string
 	CertificatePassword string
+	CertificateReader   io.Reader
 }
 
 func BindCertificateAuthFlags(flags *pflag.FlagSet, certificateAuth *CertificateAuth) {

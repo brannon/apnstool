@@ -12,6 +12,7 @@ import (
 	"github.com/brannon/apnstool/apns"
 	"github.com/brannon/apnstool/cmd/auth"
 	"github.com/brannon/apnstool/cmdio"
+	"github.com/brannon/apnstool/operation"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
@@ -60,6 +61,15 @@ func BindSendCommonFlags(flags *pflag.FlagSet, cmd *SendCmd) {
 	flags.StringVar(&cmd.DeviceToken, DeviceTokenFlag, DeviceTokenDefault, DeviceTokenDesc)
 	flags.BoolVar(&cmd.Sandbox, SandboxFlag, SandboxDefault, SandboxDesc)
 	flags.BoolVarP(&cmd.Verbose, VerboseFlag, VerboseShortFlag, VerboseDefault, VerboseDesc)
+}
+
+func BindSendOperationCommonFlags(flags *pflag.FlagSet, op *operation.SendOperation) {
+	auth.BindTokenAuthFlags(flags, &op.TokenAuth)
+	auth.BindCertificateAuthFlags(flags, &op.CertificateAuth)
+	flags.StringVar(&op.AppId, AppIdFlag, AppIdDefault, AppIdDesc)
+	flags.StringVar(&op.DeviceToken, DeviceTokenFlag, DeviceTokenDefault, DeviceTokenDesc)
+	flags.BoolVar(&op.Sandbox, SandboxFlag, SandboxDefault, SandboxDesc)
+	flags.BoolVarP(&op.Verbose, VerboseFlag, VerboseShortFlag, VerboseDefault, VerboseDesc)
 }
 
 func (cmd *SendCmd) sendNotification(
