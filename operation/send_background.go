@@ -6,33 +6,29 @@ package operation
 
 import "github.com/brannon/apnstool/apns"
 
-type SendAlertOperation struct {
+type SendBackgroundOperation struct {
 	SendOperation
 
-	AlertText  string
-	BadgeCount int
-	SoundName  string
+	DataString string
 }
 
-func NewSendAlert(client apns.Client) *SendAlertOperation {
-	op := &SendAlertOperation{}
+func NewSendBackground(client apns.Client) *SendBackgroundOperation {
+	op := &SendBackgroundOperation{}
 	op.Client = client
 	return op
 }
 
-func (op *SendAlertOperation) Exec() (*SendOperationResult, error) {
+func (op *SendBackgroundOperation) Exec() (*SendOperationResult, error) {
 	notificationBuilder := apns.NewNotificationBuilder(op.AppId)
+	notificationBuilder.SetContentAvailable(true)
 
-	if op.AlertText != "" {
-		notificationBuilder.SetAlertText(op.AlertText)
-	}
+	if op.DataString != "" {
+		data, err := parseDataString(op.DataString)
+		if err != nil {
+			return nil, err
+		}
 
-	if op.BadgeCount != -1 {
-		notificationBuilder.SetBadgeCount(op.BadgeCount)
-	}
-
-	if op.SoundName != "" {
-		notificationBuilder.SetSoundName(op.SoundName)
+		notificationBuilder.Merge(data)
 	}
 
 	headers, content, err := notificationBuilder.Build()

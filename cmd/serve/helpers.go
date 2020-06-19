@@ -1,42 +1,61 @@
+// Copyright 2019 Brannon Jones. All rights reserved.
+// Use of this source code is governed by an MIT-style
+// license that can be found in the LICENSE file.
+
 package serve
 
 import (
-	"encoding/json"
+	"fmt"
+	"io"
 	"net/http"
+	"strings"
+	"text/template"
 )
 
-type JSONObject map[string]interface{}
-type JSONArray []interface{}
-
-type ErrorApiModel struct {
-	Message string `json:"message"`
-}
-
-func ReadJSON(req *http.Request, body interface{}) error {
-	defer req.Body.Close()
-	decoder := json.NewDecoder(req.Body)
-	return decoder.Decode(&body)
+type LayoutContext struct {
+	ViewName    string
+	ViewContext interface{}
 }
 
 func WriteError(rw http.ResponseWriter, statusCode int, err error) {
-	model := &ErrorApiModel{
-		Message: err.Error(),
+	WritePlainText(rw, http.StatusInternalServerError, err.Error())
+}
+
+func WriteHtmlView(rw http.ResponseWriter, viewName string, context interface{}) {
+	WriteHtmlLayout(rw, "main", &LayoutContext{
+		ViewName:    viewName,
+		ViewContext: context,
+	})
+}
+
+func WriteHtmlLayout(rw http.ResponseWriter, layoutName string, context *LayoutContext) {
+	tmpl, err := LookupLayoutTemplate(layoutName)
+	if err != nil {
+		WriteError(rw, http.StatusInternalServerError, err)
+		return
 	}
 
-	WriteJSON(rw, 500, model)
+	WriteHtmlTemplate(rw, tmpl, context)
 }
 
-func WriteJSON(rw http.ResponseWriter, statusCode int, body interface{}) {
-	rw.Header().Set("Content-Type", "application/json")
-	rw.WriteHeader(statusCode)
+func WriteHtmlTemplate(rw http.ResponseWriter, tmpl *template.Template, context interface{}) {
+	rw.Header().Set("Content-Type", "text/html")
+	rw.WriteHeader(200)
 
-	encoder := json.NewEncoder(rw)
-	encoder.SetIndent("", "  ")
-	_ = encoder.Encode(body)
+	err := tmpl.Execute(rw, context)
+	if err != nil {
+		fmt.Fprintf(rw, "<!-- Error rendering template: %s -->", err)
+	}
 }
 
-func WriteOperationResult(rw http.ResponseWriter, statusCode int, result string) {
+func WriteMethodNotAllowed(rw http.ResponseWriter, allowedMethods []string) {
+	text := fmt.Sprintf("Methods allowed: %s\n", strings.Join(allowedMethods, ","))
+	WritePlainText(rw, http.StatusMethodNotAllowed, text)
+}
+
+func WritePlainText(rw http.ResponseWriter, statusCode int, text string) {
 	rw.Header().Set("Content-Type", "text/plain")
 	rw.WriteHeader(statusCode)
-	rw.Write([]byte(result))
+
+	_, _ = io.WriteString(rw, text)
 }

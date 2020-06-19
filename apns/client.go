@@ -113,7 +113,7 @@ func (c *client) Send(deviceToken string, headers Headers, content []byte) (*Sen
 
 	c.log("* Sending request:\n")
 	c.logf("> %s %s\n", req.Method, req.URL.String())
-	for name, _ := range req.Header {
+	for name := range req.Header {
 		c.logf("> %s: %s\n", name, req.Header.Get(name))
 	}
 	c.logf("> %s\n", content)
@@ -128,7 +128,7 @@ func (c *client) Send(deviceToken string, headers Headers, content []byte) (*Sen
 
 	c.logf("* Received response:\n")
 	c.logf("< %s\n", res.Status)
-	for name, _ := range res.Header {
+	for name := range res.Header {
 		c.logf("< %s: %s\n", name, res.Header.Get(name))
 	}
 

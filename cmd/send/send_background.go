@@ -7,56 +7,45 @@ package send
 import (
 	"github.com/brannon/apnstool/apns"
 	"github.com/brannon/apnstool/cmdio"
+	"github.com/brannon/apnstool/operation"
 	"github.com/spf13/cobra"
 )
 
-type SendBackgroundCmd struct {
-	SendCmd
-
-	DataString string
-}
-
 func NewSendBackgroundCommand() *cobra.Command {
-	cmd := &SendBackgroundCmd{}
+	client := apns.NewClient()
+	op := operation.NewSendBackground(client)
+
+	var verbose bool
 
 	cobraCmd := &cobra.Command{
 		Use:   "background",
 		Short: "Send simple background notification through APNs",
 		RunE: func(c *cobra.Command, args []string) error {
-			cmd.Client = apns.NewClient()
-			cmd.IO = cmdio.NewCmdIO(c.OutOrStdout())
+			io := cmdio.NewCmdIO(c.OutOrStdout())
 
-			return cmd.Run()
+			if verbose {
+				client.EnableLogging(io.Stdout())
+			}
+
+			result, err := op.Exec()
+			if err != nil {
+				return err
+			}
+
+			io.Out("Notification sent successfully\n")
+			io.Outf("APNS-ID: %s\n", result.ApnsId)
+
+			return nil
 		},
 	}
 
 	flags := cobraCmd.Flags()
-	BindSendCommonFlags(flags, &cmd.SendCmd)
-	flags.StringVarP(&cmd.DataString, DataStringFlag, DataStringShortFlag, DataStringDefault, DataStringDesc)
+	BindSendOperationCommonFlags(flags, &op.SendOperation)
+	flags.BoolVarP(&verbose, VerboseFlag, VerboseShortFlag, VerboseDefault, VerboseDesc)
+	flags.StringVarP(&op.DataString, DataStringFlag, DataStringShortFlag, DataStringDefault, DataStringDesc)
 
 	_ = cobraCmd.MarkFlagRequired(AppIdFlag)
 	_ = cobraCmd.MarkFlagRequired(DeviceTokenFlag)
 
 	return cobraCmd
-}
-
-func (cmd *SendBackgroundCmd) Run() error {
-	notificationBuilder := apns.NewNotificationBuilder(cmd.AppId)
-	notificationBuilder.SetContentAvailable(true)
-
-	if cmd.DataString != "" {
-		data, err := parseDataString(cmd.DataString)
-		if err != nil {
-			return err
-		}
-
-		notificationBuilder.Merge(data)
-	}
-
-	headers, content, err := notificationBuilder.Build()
-	if err != nil {
-		return err
-	}
-
-	return cmd.sendNotification(headers, content)
 }

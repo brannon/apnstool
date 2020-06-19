@@ -29,11 +29,17 @@ func NewSendAlertCommand() *cobra.Command {
 	client := apns.NewClient()
 	op := operation.NewSendAlert(client)
 
+	var verbose bool
+
 	cobraCmd := &cobra.Command{
 		Use:   "alert",
 		Short: "Send simple alert notification through APNs",
 		RunE: func(c *cobra.Command, args []string) error {
 			io := cmdio.NewCmdIO(c.OutOrStdout())
+
+			if verbose {
+				client.EnableLogging(io.Stdout())
+			}
 
 			result, err := op.Exec()
 			if err != nil {
@@ -49,6 +55,7 @@ func NewSendAlertCommand() *cobra.Command {
 
 	flags := cobraCmd.Flags()
 	BindSendOperationCommonFlags(flags, &op.SendOperation)
+	flags.BoolVarP(&verbose, VerboseFlag, VerboseShortFlag, VerboseDefault, VerboseDesc)
 	flags.StringVar(&op.AlertText, AlertTextFlag, AlertTextDefault, AlertTextDesc)
 	flags.IntVar(&op.BadgeCount, BadgeCountFlag, BadgeCountDefault, BadgeCountDesc)
 	flags.StringVar(&op.SoundName, SoundNameFlag, SoundNameDefault, SoundNameDesc)

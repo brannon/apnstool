@@ -7,6 +7,7 @@ package send
 import (
 	"github.com/brannon/apnstool/apns"
 	"github.com/brannon/apnstool/cmdio"
+	"github.com/brannon/apnstool/operation"
 	"github.com/spf13/cobra"
 )
 
@@ -20,53 +21,44 @@ const (
 	PushTypeDesc    = "value for 'apns-push-type' header"
 )
 
-type SendRawCmd struct {
-	SendCmd
-
-	DataString string
-	Priority   string
-	PushType   string
-}
-
 func NewSendRawCommand() *cobra.Command {
-	cmd := &SendRawCmd{}
+	client := apns.NewClient()
+	op := operation.NewSendRaw(client)
+
+	var verbose bool
 
 	cobraCmd := &cobra.Command{
 		Use:   "raw",
 		Short: "Send raw notification through APNs",
 		RunE: func(c *cobra.Command, args []string) error {
-			cmd.Client = apns.NewClient()
-			cmd.IO = cmdio.NewCmdIO(c.OutOrStdout())
+			io := cmdio.NewCmdIO(c.OutOrStdout())
 
-			return cmd.Run()
+			if verbose {
+				client.EnableLogging(io.Stdout())
+			}
+
+			result, err := op.Exec()
+			if err != nil {
+				return err
+			}
+
+			io.Out("Notification sent successfully\n")
+			io.Outf("APNS-ID: %s\n", result.ApnsId)
+
+			return nil
 		},
 	}
 
 	flags := cobraCmd.Flags()
-	BindSendCommonFlags(flags, &cmd.SendCmd)
-	flags.StringVarP(&cmd.DataString, DataStringFlag, DataStringShortFlag, DataStringDefault, DataStringDesc)
-	flags.StringVar(&cmd.Priority, PriorityFlag, PriorityDefault, PriorityDesc)
-	flags.StringVar(&cmd.PushType, PushTypeFlag, PushTypeDefault, PushTypeDesc)
+	BindSendOperationCommonFlags(flags, &op.SendOperation)
+	flags.BoolVarP(&verbose, VerboseFlag, VerboseShortFlag, VerboseDefault, VerboseDesc)
+	flags.StringVarP(&op.DataString, DataStringFlag, DataStringShortFlag, DataStringDefault, DataStringDesc)
+	flags.StringVar(&op.Priority, PriorityFlag, PriorityDefault, PriorityDesc)
+	flags.StringVar(&op.PushType, PushTypeFlag, PushTypeDefault, PushTypeDesc)
 
 	_ = cobraCmd.MarkFlagRequired(AppIdFlag)
 	_ = cobraCmd.MarkFlagRequired(DeviceTokenFlag)
 	_ = cobraCmd.MarkFlagRequired(DataStringFlag)
 
 	return cobraCmd
-}
-
-func (cmd *SendRawCmd) Run() error {
-	headers := make(apns.Headers)
-
-	headers["apns-topic"] = cmd.AppId
-
-	if cmd.Priority != "" {
-		headers["apns-priority"] = cmd.Priority
-	}
-
-	if cmd.PushType != "" {
-		headers["apns-push-type"] = cmd.PushType
-	}
-
-	return cmd.sendNotification(headers, []byte(cmd.DataString))
 }
