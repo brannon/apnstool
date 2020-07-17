@@ -19,6 +19,22 @@ type SendOperationResult struct {
 	ApnsId string
 }
 
+type SendOperationError struct {
+	StatusCode  int
+	ErrorReason string
+}
+
+func (err *SendOperationError) Error() string {
+	return fmt.Sprintf("Operation failed with error: %d %s", err.StatusCode, err.ErrorReason)
+}
+
+func GetErrorStatusCode(err error) int {
+	if sendOperationError, ok := err.(*SendOperationError); ok {
+		return sendOperationError.StatusCode
+	}
+	return -1
+}
+
 type SendOperation struct {
 	AppId           string
 	CertificateAuth auth.CertificateAuth
@@ -90,7 +106,10 @@ func (op *SendOperation) sendNotification(
 		}, nil
 	}
 
-	return nil, fmt.Errorf("Send operation failed with error: %d %s", result.StatusCode, result.ErrorReason())
+	return nil, &SendOperationError{
+		StatusCode:  result.StatusCode,
+		ErrorReason: result.ErrorReason(),
+	}
 }
 
 func (op *SendOperation) useCertificateAuth() bool {

@@ -32,10 +32,11 @@ type ServeCmd struct {
 func GetCommand() *cobra.Command {
 	cmd := &ServeCmd{}
 
-	http.HandleFunc("/send/alert", cmd.handleSendAlert)
-	http.HandleFunc("/send/background", cmd.handleSendBackground)
-	http.HandleFunc("/send/raw", cmd.handleSendRaw)
-	http.HandleFunc("/", cmd.handleIndex)
+	http.HandleFunc("/faq", WithLogging(cmd.handleFaq))
+	http.HandleFunc("/send/alert", WithLogging(cmd.handleSendAlert))
+	http.HandleFunc("/send/background", WithLogging(cmd.handleSendBackground))
+	http.HandleFunc("/send/raw", WithLogging(cmd.handleSendRaw))
+	http.HandleFunc("/", WithLogging(cmd.handleIndex))
 
 	cobraCmd := &cobra.Command{
 		Use:   "serve",

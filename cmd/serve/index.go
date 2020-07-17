@@ -11,8 +11,14 @@ import (
 func (cmd *ServeCmd) handleIndex(rw http.ResponseWriter, req *http.Request) {
 	switch req.Method {
 	case http.MethodGet:
-		WriteHtmlView(rw, "index", nil)
-		return
+		switch req.URL.Path {
+		case "/":
+			WriteHtmlView(rw, req, "index", nil)
+			return
+		default:
+			WriteNotFound(rw)
+			return
+		}
 	default:
 		WriteMethodNotAllowed(rw, []string{http.MethodGet})
 		return

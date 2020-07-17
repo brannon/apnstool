@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/brannon/apnstool/build_version"
 	"github.com/brannon/apnstool/cmd/auth"
 	"github.com/brannon/apnstool/cmd/send"
 	"github.com/brannon/apnstool/cmd/serve"
@@ -17,6 +18,7 @@ import (
 var rootCmd = &cobra.Command{
 	Use:          "apnstool",
 	Short:        "APNSTool is a command-line tool for interacting with APNs",
+	Version:      fmt.Sprintf("%s-%s", build_version.BuildDate, build_version.CommitHash),
 	Args:         cobra.NoArgs,
 	SilenceUsage: true,
 }
