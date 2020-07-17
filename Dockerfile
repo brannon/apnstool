@@ -6,5 +6,5 @@ RUN ./build.sh linux
 FROM alpine:3.12
 RUN apk --no-cache add ca-certificates
 WORKDIR /root/
-COPY --from=builder /go/src/github.com/brannon/apnstool/bin/linux_amd64/apnstool .
-CMD ["./apnstool"]
+COPY --from=builder /go/src/github.com/brannon/apnstool/bin/linux_amd64/apnstool /apnstool
+CMD ["/apnstool"]
