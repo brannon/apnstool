@@ -7,6 +7,7 @@ package serve
 import (
 	"bytes"
 	"fmt"
+	"strings"
 	"text/template"
 )
 
@@ -18,6 +19,7 @@ func init() {
 	viewCache = new(TemplateCache)
 
 	layoutCache.RegisterFunc("render_view", RenderView)
+	layoutCache.RegisterFunc("has_prefix", strings.HasPrefix)
 
 	layoutCache.MustParse("main", mainLayoutHtml)
 
@@ -145,17 +147,15 @@ const mainLayoutHtml string = `
 					<li class="nav-item {{ if eq .Request.Path "/faq" }}active{{ end }}">
 						<a class="nav-link" href="/faq">FAQ</a>
 					</li>
-					<li class="nav-item {{ if eq .Request.Path "/send/alert" }}active{{ end }}">
-						<a class="nav-link" href="/send/alert">Alert</a>
+					<li class="nav-item dropdown {{ if has_prefix .Request.Path "/send/" }}active{{ end }}">
+						<a class="nav-link dropdown-toggle" href="#" id="sendDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+							Send
+						</a>
+						<div class="dropdown-menu" aria-labelledby="sendDropdown">
+							<a class="dropdown-item" href="/send/alert">Alert</a>
+							<a class="dropdown-item" href="/send/background">Background</a>
+						</div>
 					</li>
-<!--
-					<li class="nav-item {{ if eq .Request.Path "/send/background" }}active{{ end }}">
-						<a class="nav-link" href="/send/background">Send Background</a>
-					</li>
-					<li class="nav-item {{ if eq .Request.Path "/send/raw" }}active{{ end }}">
-						<a class="nav-link" href="/send/raw">Send Raw</a>
-					</li>
--->
 				</ul>
 				<a href="https://github.com/brannon/apnstool"><i class="fab fa-github fa-2x text-white"></i></a>
 			</div>
@@ -200,7 +200,6 @@ const indexViewHtml string = `
 		<p>Choose the type of push notification to send:</p>
 		<a class="btn btn-primary btn-lg" href="/send/alert" role="button">Alert</a>
 		<a class="btn btn-primary btn-lg" href="/send/background" role="button">Background</a> 
-		<a class="btn btn-primary btn-lg" href="/send/raw" role="button">Raw</a> 
 	</div>
 	<div class="alert alert-warning">
 		<p>This tool is not supported for production use!</p>
