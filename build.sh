@@ -8,13 +8,13 @@ BUILD_DATE=$(date +"%Y%m%d")
 
 OS=${1:-darwin}
 
-if [[ $OS == "darwin" ]]; then
+if [[ $OS == "darwin" || $OS == "macos-latest" ]]; then
     GOOS=darwin
     GOARCH=amd64
-elif [[ $OS == "linux" ]]; then
+elif [[ $OS == "linux" || $OS == "ubuntu-latest" ]]; then
     GOOS=linux
     GOARCH=amd64
-elif [[ $OS == "windows" ]]; then
+elif [[ $OS == "windows" || $OS == "windows-latest" ]]; then
     GOOS=windows
     GOARCH=amd64
 else
@@ -23,7 +23,7 @@ else
 fi
 
 OUTPUT=bin/${GOOS}_${GOARCH}/apnstool
-if [[ $OS == "windows" ]]; then
+if [[ $GOOS == "windows" ]]; then
     OUTPUT=${OUTPUT}.exe
 fi
 
