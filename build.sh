@@ -27,6 +27,11 @@ if [[ $GOOS == "windows" ]]; then
     OUTPUT=${OUTPUT}.exe
 fi
 
+echo "Building for OS: $OS"
+echo "GOOS: $GOOS"
+echo "GOARCH: $GOARCH"
+echo "OUTPUT: $OUTPUT"
+
 export CGO_ENABLED=0
 export GOOS=$GOOS
 export GOARCH=$GOARCH
@@ -34,3 +39,11 @@ go build \
     -a -ldflags="-X 'github.com/brannon/apnstool/build_version.CommitHash=$GIT_COMMIT_SHORT$GIT_DIRTY' -X 'github.com/brannon/apnstool/build_version.BuildDate=$BUILD_DATE'" \
     -o $OUTPUT \
     .
+
+if [[ -f $OUTPUT ]]; then
+    echo "Successfully built output: $OUTPUT"
+    eval "$OUTPUT --version"
+else
+    echo "Output does not exist: $OUTPUT"
+    exit 1
+fi

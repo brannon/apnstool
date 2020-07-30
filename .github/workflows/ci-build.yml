@@ -38,12 +38,12 @@ jobs:
       if: ${{ matrix.os == 'ubuntu-latest' }}
       uses: actions/upload-artifact@v1
       with:
-        name: apnstool-macos-amd64
+        name: apnstool-linux-amd64
         path: bin/linux_amd64/apnstool
 
     - name: Upload artifact
       if: ${{ matrix.os == 'windows-latest' }}
       uses: actions/upload-artifact@v1
       with:
-        name: binary-windows-amd64
+        name: apnstool-windows-amd64
         path: bin/windows_amd64/apnstool.exe
