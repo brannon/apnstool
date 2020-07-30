@@ -20,8 +20,9 @@ import (
 const (
 	DeviceEndpointFormat = "https://%s/3/device/%s"
 
-	ProductionEndpoint = "api.push.apple.com"
-	SandboxEndpoint    = "api.sandbox.push.apple.com"
+	ProductionEndpoint  = "api.push.apple.com"
+	SandboxEndpoint     = "api.sandbox.push.apple.com"
+	DevelopmentEndpoint = "api.development.push.apple.com"
 )
 
 type Headers map[string]string

@@ -56,6 +56,10 @@ func NewSendAlertCommand() *cobra.Command {
 	flags := cobraCmd.Flags()
 	BindSendOperationCommonFlags(flags, &op.SendOperation)
 	flags.BoolVarP(&verbose, VerboseFlag, VerboseShortFlag, VerboseDefault, VerboseDesc)
+
+	flags.StringVar(&op.Expiration, ExpirationFlag, ExpirationDefault, ExpirationDesc)
+	flags.StringVar(&op.Priority, PriorityFlag, PriorityDefault, PriorityDesc)
+
 	flags.StringVar(&op.AlertText, AlertTextFlag, AlertTextDefault, AlertTextDesc)
 	flags.IntVar(&op.BadgeCount, BadgeCountFlag, BadgeCountDefault, BadgeCountDesc)
 	flags.StringVar(&op.SoundName, SoundNameFlag, SoundNameDefault, SoundNameDesc)

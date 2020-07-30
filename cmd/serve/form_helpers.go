@@ -8,6 +8,7 @@ import (
 	"io"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -16,9 +17,18 @@ const MaxFormMemory = 64 * 1024 * 1024
 func getFormBool(req *http.Request, name string) bool {
 	value := req.FormValue(name)
 	if value != "" {
-		boolValue, err := strconv.ParseBool(value)
-		if err == nil {
-			return boolValue
+		switch strings.ToLower(value) {
+		case "0":
+		case "off":
+			return false
+		case "1":
+		case "on":
+			return true
+		default:
+			boolValue, err := strconv.ParseBool(value)
+			if err == nil {
+				return boolValue
+			}
 		}
 	}
 

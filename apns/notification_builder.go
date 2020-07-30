@@ -4,11 +4,15 @@
 
 package apns
 
-import "encoding/json"
+import (
+	"encoding/json"
+)
 
 type NotificationBuilder struct {
-	AppId   string
-	content map[string]interface{}
+	AppId      string
+	content    map[string]interface{}
+	expiration Expiration
+	priority   Priority
 }
 
 func NewNotificationBuilder(appId string) *NotificationBuilder {
@@ -62,6 +66,14 @@ func (b *NotificationBuilder) BuildHeaders() (Headers, error) {
 		headers["apns-priority"] = "5"
 	}
 
+	if b.expiration != NoExpiration {
+		headers["apns-expiration"] = b.expiration.String()
+	}
+
+	if b.priority != NoPriority {
+		headers["apns-priority"] = b.priority.String()
+	}
+
 	return headers, nil
 }
 
@@ -99,6 +111,16 @@ func (b *NotificationBuilder) SetContentAvailable(value bool) *NotificationBuild
 	}
 
 	b.aps()["content-available"] = intValue
+	return b
+}
+
+func (b *NotificationBuilder) SetExpiration(value Expiration) *NotificationBuilder {
+	b.expiration = value
+	return b
+}
+
+func (b *NotificationBuilder) SetPriority(value Priority) *NotificationBuilder {
+	b.priority = value
 	return b
 }
 

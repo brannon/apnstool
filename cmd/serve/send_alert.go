@@ -64,6 +64,9 @@ func (cmd *ServeCmd) handleSendAlertPost(rw http.ResponseWriter, req *http.Reque
 		return
 	}
 
+	op.Expiration = getFormString(req, "expiration")
+	op.Priority = getFormString(req, "priority")
+
 	op.AlertText = getFormString(req, "alert-text")
 	op.BadgeCount = getFormInt(req, "badge-count")
 	op.SoundName = getFormString(req, "sound-name")

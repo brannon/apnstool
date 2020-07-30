@@ -360,6 +360,21 @@ Alert notifications also set the <code>apns-push-type</code> header to <code>ale
 	</div>
 
 	<div class="form-group row">
+		<label for="device-token" class="col-sm-2 col-form-label">Expiration</label>
+		<div class="col-sm-10">
+			<input type="number" class="form-control" name="expiration" id="expiration">
+			<small class="form-text text-muted">Specifies the time when the notification expires (as a unix timestamp). The value <code>0</code> will cause APNS to attempt immediate delivery, without any retries.</small>
+		</div>
+	</div>
+	<div class="form-group row">
+		<label for="device-token" class="col-sm-2 col-form-label">Priority</label>
+		<div class="col-sm-10">
+			<input type="number" class="form-control" name="priority" id="priority">
+			<small class="form-text text-muted">Specifies the priority of the notification. Valid values are <code>5</code> and <code>10</code>.</small>
+		</div>
+	</div>
+
+	<div class="form-group row">
 		<label for="alert-text" class="col-sm-2 col-form-label">Alert Text</label>
 		<div class="col-sm-10">
 			<input type="text" class="form-control" name="alert-text" id="alert-text">

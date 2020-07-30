@@ -12,6 +12,10 @@ import (
 )
 
 const (
+	ExpirationFlag    = "expiration"
+	ExpirationDefault = ""
+	ExpirationDesc    = "expiration time"
+
 	PriorityFlag    = "priority"
 	PriorityDefault = ""
 	PriorityDesc    = "value for 'apns-priority' header"

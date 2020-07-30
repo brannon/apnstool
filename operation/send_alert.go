@@ -4,10 +4,15 @@
 
 package operation
 
-import "github.com/brannon/apnstool/apns"
+import (
+	"github.com/brannon/apnstool/apns"
+)
 
 type SendAlertOperation struct {
 	SendOperation
+
+	Expiration string
+	Priority   string
 
 	AlertText  string
 	BadgeCount int
@@ -33,6 +38,22 @@ func (op *SendAlertOperation) Exec() (*SendOperationResult, error) {
 
 	if op.SoundName != "" {
 		notificationBuilder.SetSoundName(op.SoundName)
+	}
+
+	if op.Expiration != "" {
+		expiration, err := apns.ParseExpiration(op.Expiration)
+		if err != nil {
+			return nil, err
+		}
+		notificationBuilder.SetExpiration(expiration)
+	}
+
+	if op.Priority != "" {
+		priority, err := apns.ParsePriority(op.Priority)
+		if err != nil {
+			return nil, err
+		}
+		notificationBuilder.SetPriority(priority)
 	}
 
 	headers, content, err := notificationBuilder.Build()
