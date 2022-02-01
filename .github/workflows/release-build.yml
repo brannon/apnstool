@@ -1,0 +1,65 @@
+name: Release build
+on:
+  push
+    tags:
+      - release-*
+jobs:
+
+  build:
+    name: Build
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+
+    steps:
+
+    - name: Set up Go 1.13
+      uses: actions/setup-go@v1
+      with:
+        go-version: 1.13
+      id: go
+
+    - name: Check out code into the Go module directory
+      uses: actions/checkout@v1
+
+    - name: Get dependencies
+      run: |
+        go get -v -t -d ./...
+        go get github.com/mitchellh/gox
+
+    - name: Get version
+      id: get_version
+      run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
+
+    - name: Build
+      run: |
+        gox -arch="amd64" -os="darwin linux windows" -output "bin/{{.OS}}_{{.Arch}}/apnstool"
+
+    - name: Package binaries
+      run: |
+        tar czf bin/apnstool.${{ steps.get_version.outputs.VERSION }}.macos.tar.gz bin/darwin_amd64/apsntool
+
+    - name: Upload macOS binary
+      uses: svenstaro/upload-release-action@v1-release
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        file: bin/apnstool.${{ steps.get_version.outputs.VERSION }}.macos.tar.gz
+        asset_name: apnstool.${{ steps.get_version.outputs.VERSION }}.macos.tar.gz
+        tag: ${{ github.ref }}
+
+    - name: Upload Linux binary
+      uses: svenstaro/upload-release-action@v1-release
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        file: bin/apnstool.${{ steps.get_version.outputs.VERSION }}.macos.tar.gz
+        asset_name: apnstool.${{ steps.get_version.outputs.VERSION }}.macos.tar.gz
+        tag: ${{ github.ref }}
+
+    - name: Upload Windows binary
+      uses: svenstaro/upload-release-action@v1-release
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        file: bin/apnstool.${{ steps.get_version.outputs.VERSION }}.macos.tar.gz
+        asset_name: apnstool.${{ steps.get_version.outputs.VERSION }}.macos.tar.gz
+        tag: ${{ github.ref }}
